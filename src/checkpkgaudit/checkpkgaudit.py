@@ -145,7 +145,7 @@ class AuditSummary(nagiosplugin.Summary):
 def parse_args():  # pragma: no cover
     """Arguments parser."""
     argp = argparse.ArgumentParser(description=__doc__)
-    argp.add_argument('-i', '--ignore', action="append",
+    argp.add_argument('-i', '--ignore', nargs='*',
                       metavar='ignored jails', dest='ignored_jails',
                       help='ignored jail name or host hostname \n \
                               ex : -i ns0 -i host')
