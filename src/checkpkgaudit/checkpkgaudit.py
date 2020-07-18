@@ -31,7 +31,7 @@ def _popen(cmd):  # pragma: no cover
         raise nagiosplugin.CheckError(message)
 
 
-def _get_jails():
+def _get_jails(ignored_jails=[]):
     """Provides running jails."""
     jailargs = []
     jls = subprocess.check_output('jls')
@@ -42,7 +42,7 @@ def _get_jails():
         jailargs = list()
         for jail in jails:
             host_idx = 1 if len(jail.split()) == 3 else 2
-            if not jail.split()[host_idx].startswith('hastd:'):
+            if not jail.split()[host_idx].startswith('hastd:') and  jail.split()[host_idx] not in ignored_jails:
                 jailargs.append({'jid': jail.split()[0],
                                  'hostname': jail.split()[host_idx]})
     return jailargs
@@ -52,6 +52,15 @@ class CheckPkgAudit(nagiosplugin.Resource):
     """Check FreeBSD pkg audit plugin."""
 
     hostname = platform.node()
+
+
+    def __init__(self, ignored_jails=[]):
+        """Create CheckPkgAudit Ressource.
+
+           Store ignored jails in ignored_jails list
+        """
+        self.ignored_jails = ignored_jails
+
 
     def pkg_audit(self, jail=None):
         """Run pkg audit.
@@ -91,11 +100,11 @@ class CheckPkgAudit(nagiosplugin.Resource):
 
     def probe(self):
         """Runs pkg audit over host and running jails."""
-
-        yield nagiosplugin.Metric(self.hostname, self.pkg_audit(),
-                                  min=0, context="pkg_audit")
+        if not self.hostname in self.ignored_jails:
+            yield nagiosplugin.Metric(self.hostname, self.pkg_audit(),
+                                      min=0, context="pkg_audit")
         # yield running jails
-        jails = _get_jails()
+        jails = _get_jails(self.ignored_jails)
         if jails:
             for jail in jails:
                 yield nagiosplugin.Metric(jail['hostname'],
@@ -136,6 +145,10 @@ class AuditSummary(nagiosplugin.Summary):
 def parse_args():  # pragma: no cover
     """Arguments parser."""
     argp = argparse.ArgumentParser(description=__doc__)
+    argp.add_argument('-i', '--ignore', action="append",
+                      metavar='ignored jails', dest='ignored_jails',
+                      help='ignored jail name or host hostname \n \
+                              ex : -i ns0 -i host')
     argp.add_argument('-v', '--verbose', action='count', default=0,
                       help='increase output verbosity (use up to 3 times)')
 
@@ -154,11 +167,11 @@ def main():  # pragma: no cover
     """
 
     args = parse_args()
-    check = nagiosplugin.Check(CheckPkgAudit(),
+    check = nagiosplugin.Check(CheckPkgAudit(args.ignored_jails),
                                nagiosplugin.ScalarContext('pkg_audit', None,
                                                           '@1:'),
                                AuditSummary())
-    check.main(verbose=args.verbose)
+    check.main(verbose=args.verbose, timeout=0)
 
 
 if __name__ == '__main__':  # pragma: no cover
