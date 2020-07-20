@@ -171,7 +171,7 @@ def main():  # pragma: no cover
                                nagiosplugin.ScalarContext('pkg_audit', None,
                                                           '@1:'),
                                AuditSummary())
-    check.main(verbose=args.verbose, timeout=0)
+    check.main(verbose=args.verbose)
 
 
 if __name__ == '__main__':  # pragma: no cover
