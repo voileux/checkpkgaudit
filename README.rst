@@ -40,9 +40,17 @@ sample outputs :
 + Ok
     
     ::
-      
-      CHECKPKGAUDIT OK - 0 vulnerabilities found ! | 'host.domain.tld'=0;;@1:;0 http=0;;@1:;0 masterdns=0;;@1:;0 ns0=0;;@1:;0 ns1=0;;@1:;0 ns2=0;;@1:;0 smtp=0;;@1:;0
     
+      $ check_pkgaudit  
+      CHECKPKGAUDIT OK - 0 vulnerabilities found ! | 'host.domain.tld'=0;;@1:;0 http=0;;@1:;0 masterdns=0;;@1:;0 ns0=0;;@1:;0 ns1=0;;@1:;0 ns2=0;;@1:;0 smtp=0;;@1:;0 test=0;;@1:;0 tryjail=0;;@1:;0
+    
+Sometimes you want ignore check on jails or host, and it's not critical. Typically a test jails without production code. You have an option '--ignore', the plugin will ignore the jail is in the list or the host, and no check was done on it.
+
+    ::
+    
+      $ check_pkgaudit --ignore test try-jail host.domain.tld
+      CHECKPKGAUDIT OK - 0 vulnerabilities found ! | 'host.domain.tld'=0;;@1:;0 http=0;;@1:;0 masterdns=0;;@1:;0 ns0=0;;@1:;0 ns1=0;;@1:;0 ns2=0;;@1:;0 smtp=0;;@1:;0
+
 
 + Critical
     
@@ -126,7 +134,7 @@ Command definition ::
     
     define command{
         command_name    check_ssh_pkgaudit
-        command_line    $USER1$/check_by_ssh -H $HOSTADDRESS$ -i /var/spool/icinga/.ssh/id_rsa -C "sudo /usr/local/bin/check_pkgaudit"
+        command_line    $USER1$/check_by_ssh -H $HOSTADDRESS$ -i /var/spool/icinga/.ssh/id_rsa -C "sudo /usr/local/bin/check_pkgaudit -i $ARGS1"
     }
 
 the service itself ::
@@ -176,7 +184,7 @@ nagios command definition ::
     
     define command{
         command_name    check_nrpe_pkgaudit
-        command_line    $USER1$/check_nrpe -H $HOSTADDRESS$ -c check_pkgaudit
+        command_line    $USER1$/check_nrpe -H $HOSTADDRESS$ -c "check_pkgaudit --ignore $ARGS1"
     }
 
 the service itself ::

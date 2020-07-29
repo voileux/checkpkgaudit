@@ -32,7 +32,7 @@ class Test__getjails(unittest.TestCase):
         mocked = "checkpkgaudit.checkpkgaudit.subprocess"
         with mock.patch(mocked) as subprocess:
             subprocess.check_output.return_value = no_jails
-            self.assertEqual(meth(ignored_jails=[]), [])
+            self.assertEqual(meth(), [])
 
     def test__get_jls_running_jails_without_ignored(self):
         meth = checkpkgaudit._get_jails
@@ -46,9 +46,9 @@ class Test__getjails(unittest.TestCase):
                {'hostname': 'formationpy', 'jid': '61'}]
         with mock.patch(mocked) as subprocess:
             subprocess.check_output.return_value = ''.join(jails)
-            self.assertEqual(meth(ignored_jails=[]), jls)
+            self.assertEqual(meth(), jls)
 
-    def test__get_jls_running_jails_with_ignored(self):
+    def test__get_jls_running_jails_with_know_ignored(self):
         meth = checkpkgaudit._get_jails
         mocked = "checkpkgaudit.checkpkgaudit.subprocess"
         jls = [{'hostname': 'masterdns', 'jid': '50'},
@@ -60,6 +60,21 @@ class Test__getjails(unittest.TestCase):
         with mock.patch(mocked) as subprocess:
             subprocess.check_output.return_value = ''.join(jails)
             self.assertEqual(meth(ignored_jails=['ns0']), jls)
+    
+    def test__get_jls_running_jails_with_unkown_ignored(self):
+        meth = checkpkgaudit._get_jails
+        mocked = "checkpkgaudit.checkpkgaudit.subprocess"
+        jls = [{'hostname': 'masterdns', 'jid': '50'},
+               {'hostname': 'smtp', 'jid': '52'},
+               {'hostname': 'ns0', 'jid': '54'},
+               {'hostname': 'ns1', 'jid': '55'},
+               {'hostname': 'http', 'jid': '57'},
+               {'hostname': 'supervision', 'jid': '59'},
+               {'hostname': 'formationpy', 'jid': '61'}]
+        with mock.patch(mocked) as subprocess:
+            subprocess.check_output.return_value = ''.join(jails)
+            self.assertEqual(meth(ignored_jails=['unknow']), jls)
+
 
 
 class Test_CheckPkgAudit(unittest.TestCase):

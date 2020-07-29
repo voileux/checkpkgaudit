@@ -1,10 +1,16 @@
 Changelog
 =========
 
-0.7.3 (unreleased)
+0.7.4 (unreleased)
 ------------------
 
 - Nothing changed yet.
+
+
+0.7.3 (2020-07-29)
+------------------
+
+- add ignore option -- voileux
 
 
 0.7.2 (2017-06-05)
